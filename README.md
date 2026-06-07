@@ -16,7 +16,7 @@ Generate stock analysis PDF reports for A-shares, B-shares, Hong Kong stocks, an
 Copy this folder into your Codex skills directory:
 
 ```text
-~/.codex/skills/a-share-stock-report
+~/.codex/skills/multi-market-stock-analysis-report-skill
 ```
 
 Then restart Codex.
