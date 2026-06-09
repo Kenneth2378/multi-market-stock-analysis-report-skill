@@ -4,6 +4,9 @@
 
 A Codex Skill for generating PDF stock research reports across A-shares, B-shares, Hong Kong stocks, and US stocks, covering fundamentals, valuation, technical analysis, capital-flow signals, news sentiment, and an investment judgment framework. For research reference only. Not investment advice.
 
+If this skill is useful, please consider giving it a Star.
+如果这个 Skill 对你有帮助，欢迎点一个 Star 支持。
+
 ## Features
 
 - Resolve stock names, codes, markets, and trading currencies.
