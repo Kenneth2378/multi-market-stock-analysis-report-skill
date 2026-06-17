@@ -1,18 +1,37 @@
-# Generated reports and charts
-*.pdf
-*.png
-*.jpg
-*.jpeg
-*.html
+# Generated workspace outputs
+workspace/
+private/
+pro/
+生成的研究报告/
 
-# Local caches and temporary files
+# Secrets and local environment files
+*.env
+.env
+.env.*
+.env.local
+secrets.*
+credentials.*
+cookies.*
+tokens.*
+api_keys.*
+
+# Python / local caches
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS / temp files
 .DS_Store
 Thumbs.db
 *.tmp
 *.log
 
-# Secrets and local environment files
-.env
-.env.*
-secrets.*
-credentials.*
+# Keep public examples allowed
+!examples/**/*.png
+!examples/**/*.jpg
+!examples/**/*.jpeg
+!examples/**/*.pdf
+!examples/**/*.html
