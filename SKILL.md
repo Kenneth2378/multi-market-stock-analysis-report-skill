@@ -161,6 +161,41 @@ Follow this Chinese outline unless the user asks otherwise:
 - Save one PDF per stock with clear Chinese filenames, for example `中际旭创_股票分析报告.pdf`, `阿里健康_股票分析报告.pdf`, or `特斯拉_股票分析报告.pdf`.
 - Generate a sibling quality check file such as `workspace/reports/中际旭创_quality_check.md`.
 
+### PDF Privacy Requirement
+
+When exporting HTML to PDF, the browser default header and footer must be disabled.
+
+If using Chrome or Edge headless printing, use a header/footer-free export option such as:
+
+```text
+--no-pdf-header-footer
+```
+
+If using Playwright or Puppeteer, set:
+
+```text
+displayHeaderFooter: false
+```
+
+After PDF generation, extract PDF text with a reliable parser such as `pypdf`, `PyMuPDF`, `pdfminer.six`, `pdftotext`, or `mutool`, and scan for local paths or credential-like keywords:
+
+```text
+file://
+D:/
+D:\CodeX
+C:/
+C:\Users
+/Users/
+api_key
+token
+cookie
+secret
+password
+```
+
+If any local path or credential-like keyword is found in the generated PDF, `quality_check.md` must mark the privacy scan as `FAIL` or `NEEDS_REVIEW`. Do not mark the privacy scan as `PASS`.
+
+
 ## Quality checks
 
 Every report must include a `quality_check.md` file.
