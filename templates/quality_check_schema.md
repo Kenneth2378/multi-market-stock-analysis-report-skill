@@ -55,7 +55,6 @@ Minimum privacy keywords:
 file://
 D:/
 D:\
-D:\CodeX
 C:/
 C:\
 C:\Users

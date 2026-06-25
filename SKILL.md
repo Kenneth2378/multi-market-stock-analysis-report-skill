@@ -239,7 +239,6 @@ Scan extracted PDF text for local paths or credential-like keywords:
 file://
 D:/
 D:\
-D:\CodeX
 C:/
 C:\
 C:\Users

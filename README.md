@@ -128,7 +128,6 @@ Minimum privacy patterns include:
 file://
 D:/
 D:\
-D:\CodeX
 C:/
 C:\
 C:\Users
