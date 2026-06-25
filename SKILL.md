@@ -1,15 +1,30 @@
 ---
 name: a-share-stock-report
-description: Generate lightweight stock research PDF reports for A-shares, B-shares, Hong Kong stocks, and US stocks. Use when the user asks for stock analysis reports, recent three-month price action, valuation, fundamentals, news/sentiment, public price-volume inference, research judgment framework, PDF output, or quality_check.md validation.
+description: Generate deep, source-backed stock research PDF reports for A-shares, B-shares, Hong Kong stocks, and US stocks. Use for company fundamentals, valuation, recent price action, public price-volume inference, catalysts, risks, research judgment, PDF output, and quality_check.md validation.
 ---
 
-# Multi-Market Stock Report
+# Deep Multi-Market Stock Report
 
-Use this skill when the user asks for stock research reports, especially lightweight PDF reports for A-shares, B-shares, Hong Kong stocks, and US stocks.
+Generate company-specific research reports, not generic market-data summaries. Preserve analytical depth while enforcing numeric, sourcing, language, semantic, and privacy gates.
 
-Default behavior must remain backward compatible: generate a lightweight PDF report plus `quality_check.md`.
+Before research or drafting, read [references/legacy_report_contract.md](references/legacy_report_contract.md), [references/research_depth_gate.md](references/research_depth_gate.md), and [references/research_pack_schema.md](references/research_pack_schema.md). The legacy contract is the minimum content standard; current numeric and privacy controls are additive, not replacements. Use [templates/quality_check_schema.md](templates/quality_check_schema.md) for final validation.
 
-Private workflows are not included in this public repository.
+Always create a research-pack JSON and use the bundled deterministic pipeline:
+
+```text
+python scripts/collect_eastmoney_evidence.py --ticker <A_OR_B_TICKER> --output evidence.json
+python scripts/init_research_pack.py --evidence evidence.json --output research_pack.json
+python scripts/generate_stock_report.py --input research_pack.json --validate-only
+python scripts/generate_stock_report.py --input research_pack.json --output-dir <reports>
+python scripts/validate_report.py <report.pdf> --pack research_pack.json --html <report.html>
+python scripts/scan_pdf_privacy.py <report.pdf>
+```
+
+Do not write a one-off renderer when these scripts are available. Do not report success unless the generated sibling `quality_check.md` ends in `PASS`.
+
+For A-shares and B-shares, use the bundled collector as the initial public-evidence snapshot when the endpoint is available. Inspect `source_errors` before research and replace missing evidence with statutory filings or another named public source. Treat the initialized pack as a draft only: it intentionally contains `数据待核验`, an empty numeric-validation list, and non-empty `pending_verification`. Complete company-specific research and numeric validation before running `--validate-only`. For Hong Kong and US stocks, gather equivalent evidence from the public alternatives below and construct the same schema manually.
+
+Default behavior is a deep PDF research report plus a sibling `quality_check.md`. The public deterministic renderer and validators are included under `scripts/`.
 
 ## Required stance
 
@@ -92,6 +107,16 @@ If the numeric validation gate fails, mark the output as `NEEDS_REVIEW` and clea
 - Check recent company announcements and major news. Prefer dated, sourceable facts over vague market rumors.
 - For copyrighted news and research reports, use short summaries and source names/links only. Avoid reproducing large excerpts or full tables unless the source license clearly permits it.
 
+### 4A. Deep-research gate
+
+- Treat the annual report and latest quarterly report as the primary evidence, not optional enrichment.
+- Capture adjusted profit, gross/net margin, operating cash flow, total assets, equity, liabilities, debt ratio, receivables, inventory, financing, and material impairment where available.
+- Identify the actual profit engine: business segments, material subsidiaries, customers, product cycle, competitive position, and controlling shareholder/governance.
+- Explain at least two material announcements or catalysts: what changed, the financial or strategic mechanism, expected timing, and confirmation/invalidation evidence. Listing titles alone does not pass.
+- Add historical valuation context or a clearly labeled substitute and at least two relevant peers when reliable comparable data exists.
+- If a key field cannot be verified, write `数据待核验`, explain why, and set the final conclusion to `NEEDS_REVIEW`.
+- For every analytical paragraph, apply the replacement test: if another ticker could replace the company name without changing the paragraph, add company-specific evidence or remove it.
+
 ### 5. Compute technical summary
 
 - For the three-month window, compute start close, latest close, period return, period high/low with dates, 20-day MA, 60-day MA when available, average turnover or volume, average transaction amount when available, top high-volume days, and a simple 14-day RSI if helpful.
@@ -120,9 +145,13 @@ If the numeric validation gate fails, mark the output as `NEEDS_REVIEW` and clea
   - `方法论说明`: which signals carried the most weight and why.
 - If the user asks for buy/sell zones, phrase them as observation zones or risk reference zones with clear caveats, not as direct orders.
 
+The evidence chain must contain at least three company-specific points covering fundamentals, valuation, and price/volume or catalysts. Each upside/base/downside scenario must include measurable triggers. Generic sector language cannot substitute for a company thesis.
+
 ### 7. Report structure
 
 Follow this Chinese outline unless the user asks otherwise:
+
+Every section must satisfy the item counts and evidence requirements in `references/legacy_report_contract.md`. Do not shorten or replace the legacy content with a generic table or summary.
 
 1. `一、核心结论`
 2. `二、基本面分析`
@@ -152,6 +181,7 @@ Follow this Chinese outline unless the user asks otherwise:
 ### 8. Chart and PDF output
 
 - Generate one recent-three-month price/volume chart per stock. A simple line chart for closing price plus volume bars is sufficient; label the latest data date.
+- Let content flow naturally across pages. Do not force section-level page breaks that leave large blank areas. Keep charts within the printable height and re-export if any page has conspicuous unused space.
 - Show the trading currency on the chart/report: RMB, USD, or HKD.
 - Prefer a stable local pipeline:
   - Build a static HTML report with Chinese fonts such as Microsoft YaHei/SimHei/SimSun.
@@ -160,12 +190,23 @@ Follow this Chinese outline unless the user asks otherwise:
 - If the workspace is read-only, request filesystem approval before creating report files.
 - Save one PDF per stock with clear Chinese filenames, for example `中际旭创_股票分析报告.pdf`, `阿里健康_股票分析报告.pdf`, or `特斯拉_股票分析报告.pdf`.
 - Generate a sibling quality check file such as `workspace/reports/中际旭创_quality_check.md`.
+- Render with `templates/report_template.html` through `scripts/generate_stock_report.py`; do not introduce section-level forced page breaks.
+
+### Semantic quality gate
+
+Extract and inspect the final report text before assigning a quality status:
+
+- Verify company, ticker, exchange, board, risk label, industry, major subsidiary, currency, catalysts, and risks are mutually consistent.
+- Fail any unrelated company, board, `ST/*ST`, business model, or copied boilerplate language.
+- Require substantive financial, valuation, price/volume, catalyst, observation, and invalidation evidence. Heading presence alone is insufficient.
+- Fail unsupported generic phrases such as `制造业需求与产品升级` unless they accurately describe the company and are evidence-backed.
+- A semantic mismatch forces `FAIL`; missing depth or unverified key fields forces `NEEDS_REVIEW`.
 
 ### PDF Privacy Requirement
 
 When exporting HTML to PDF, the browser default header and footer must be disabled.
 
-If using Chrome or Edge headless printing, use a header/footer-free export option such as:
+If using Chrome or Edge headless printing, use a header/footer-free export option. Prefer:
 
 ```text
 --no-pdf-header-footer
@@ -177,15 +218,33 @@ If using Playwright or Puppeteer, set:
 displayHeaderFooter: false
 ```
 
-After PDF generation, extract PDF text with a reliable parser such as `pypdf`, `PyMuPDF`, `pdfminer.six`, `pdftotext`, or `mutool`, and scan for local paths or credential-like keywords:
+After PDF generation, run the PDF privacy hard gate against the final exported PDF:
+
+```text
+python scripts/scan_pdf_privacy.py path/to/report.pdf
+```
+
+The generator must write the scan result to the sibling `quality_check.md`, including extractor, privacy keyword list, hit list, `PDF Privacy Scan`, and final conclusion.
+
+Extract final PDF text with a reliable parser. Use this priority order:
+
+1. PyMuPDF / fitz
+2. pypdf
+3. pdfminer.six
+4. pdftotext / mutool
+
+Scan extracted PDF text for local paths or credential-like keywords:
 
 ```text
 file://
 D:/
+D:\
 D:\CodeX
 C:/
+C:\
 C:\Users
 /Users/
+\Users\
 api_key
 token
 cookie
@@ -193,7 +252,13 @@ secret
 password
 ```
 
-If any local path or credential-like keyword is found in the generated PDF, `quality_check.md` must mark the privacy scan as `FAIL` or `NEEDS_REVIEW`. Do not mark the privacy scan as `PASS`.
+Do not rely only on HTML scanning, SVG scanning, raw zlib stream scanning, or browser export flags.
+
+If any local path or credential-like keyword is found in the generated PDF, `quality_check.md` must mark `PDF Privacy Scan` as `FAIL` and the final conclusion as `FAIL` or `NEEDS_REVIEW`. Do not mark the privacy scan or final conclusion as `PASS`.
+
+If PDF privacy scan passes but key data remains unverified, keep `Final Conclusion: NEEDS_REVIEW`.
+
+Only allow `Final Conclusion: PASS` when PDF privacy scan, forbidden-language scan, numeric validation, and all key data verification pass.
 
 
 ## Quality checks

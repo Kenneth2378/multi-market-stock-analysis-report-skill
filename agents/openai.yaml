@@ -1,0 +1,6 @@
+interface:
+  display_name: "Deep Multi-Market Stock Report"
+  short_description: "生成深度、可验证、语义一致且隐私安全的多市场股票研究报告"
+  default_prompt: "Use $a-share-stock-report to generate a deep, source-backed stock research PDF with a PASS quality check."
+policy:
+  allow_implicit_invocation: true
